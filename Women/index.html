@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Women Health Tracker</title>
+  <!-- Dark mode: apply saved theme before first paint to prevent flash -->
+  <script>
+    if (localStorage.getItem('theme') === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+  </script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav class="main-nav" role="navigation" aria-label="Main navigation">
+    <div class="nav-brand">🌸 Women Health Tracker</div>
+    <ul class="nav-links" role="list">
+      <li><a href="#home" class="nav-link active" aria-label="Home">🏠 <span>Home</span></a></li>
+      <li><a href="#track" class="nav-link" aria-label="Track Cycle">📅 <span>Track Cycle</span></a></li>
+      <li><a href="#calendar" class="nav-link" aria-label="Calendar">🗓️ <span>Calendar</span></a></li>
+      <li><a href="#tips" class="nav-link" aria-label="Health Tips">💡 <span>Health Tips</span></a></li>
+    </ul>
+    <div class="nav-theme">
+      <label class="theme-toggle" aria-label="Toggle dark mode">
+        <input type="checkbox" id="theme-toggle-input" role="switch" aria-checked="false" />
+        <span class="theme-toggle-track">
+          <span class="theme-toggle-thumb"></span>
+        </span>
+        <span class="theme-toggle-label">🌙</span>
+      </label>
+    </div>
+  </nav>
+
+  <main class="main-content">
+    <section id="home" class="page" aria-label="Home Dashboard">
+      <!-- No-data prompt (shown when no cycle data) -->
+      <div id="no-data-prompt" class="card" hidden>
+        <p class="card-title">👋 Welcome!</p>
+        <p class="card-body">Start by entering your cycle data to see predictions and reminders.</p>
+        <a href="#track" class="btn btn-primary mt-2">Track My Cycle</a>
+      </div>
+
+      <!-- Today Status card -->
+      <div id="today-status" class="card mb-2" hidden>
+        <p id="cycle-day-text" class="text-primary" style="font-size:1.25rem;font-weight:700;"></p>
+        <p id="next-period-text" class="text-muted"></p>
+      </div>
+
+      <!-- Cycle Progress card -->
+      <div id="cycle-progress-card" class="card mb-2" hidden>
+        <p id="cycle-progress-label" class="form-label"></p>
+        <div class="progress-bar-wrap">
+          <div id="cycle-progress-bar" class="progress-bar-fill" style="width:0%"></div>
+        </div>
+      </div>
+
+      <!-- Reminders -->
+      <div id="reminders-container" class="mb-2"></div>
+
+      <!-- Water Tracker card -->
+      <div class="card mb-2">
+        <p class="card-title">💧 Daily Water Tracker</p>
+        <div id="water-glasses" class="water-glasses"></div>
+        <p id="water-count" class="text-muted mt-1">0 / 8 glasses today</p>
+        <p id="water-congrats" class="text-primary mt-1" hidden>🎉 Great job! You've hit your water goal today!</p>
+      </div>
+
+      <!-- Dashboard actions -->
+      <div id="dashboard-actions" class="form-actions" hidden>
+        <button type="button" id="edit-data-btn" class="btn btn-secondary">✏️ Edit Data</button>
+        <button type="button" id="clear-data-btn" class="btn btn-danger btn-sm">🗑️ Clear Data</button>
+      </div>
+    </section>
+
+    <section id="track" class="page" hidden aria-label="Track Cycle">
+      <h1>Track Your Cycle</h1>
+      <form id="cycle-form" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="cycle-start-date">Last Period Start Date</label>
+          <input
+            type="date"
+            id="cycle-start-date"
+            class="form-input"
+            max=""
+            aria-describedby="start-date-error"
+            required
+          />
+          <span id="start-date-error" class="form-error"></span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cycle-length">Average Cycle Length (days)</label>
+          <input
+            type="number"
+            id="cycle-length"
+            class="form-input"
+            value="28"
+            min="21"
+            max="45"
+            aria-describedby="cycle-length-error"
+            required
+          />
+          <span id="cycle-length-error" class="form-error"></span>
+        </div>
+
+        <div class="form-group">
+          <span class="form-label">How are you feeling today?</span>
+          <div class="checkbox-group">
+            <label class="checkbox-chip"><input type="checkbox" name="symptom" value="cramps"> Cramps</label>
+            <label class="checkbox-chip"><input type="checkbox" name="symptom" value="headache"> Headache</label>
+            <label class="checkbox-chip"><input type="checkbox" name="symptom" value="mood-swings"> Mood Swings</label>
+            <label class="checkbox-chip"><input type="checkbox" name="symptom" value="bloating"> Bloating</label>
+            <label class="checkbox-chip"><input type="checkbox" name="symptom" value="fatigue"> Fatigue</label>
+            <label class="checkbox-chip"><input type="checkbox" name="symptom" value="backache"> Backache</label>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" id="cycle-form-submit" class="btn btn-primary">Save Cycle Data</button>
+          <button type="button" id="edit-data-btn-track" class="btn btn-secondary" hidden>✏️ Edit Data</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="calendar" class="page" hidden aria-label="Calendar">
+      <div class="calendar-header">
+        <button type="button" id="cal-prev" class="btn btn-secondary btn-sm" aria-label="Previous month">&#8249;</button>
+        <h2 id="cal-month-year"></h2>
+        <button type="button" id="cal-next" class="btn btn-secondary btn-sm" aria-label="Next month">&#8250;</button>
+      </div>
+      <div id="calendar-grid-container"></div>
+      <div id="calendar-legend"></div>
+    </section>
+
+    <section id="tips" class="page" hidden aria-label="Health Tips">
+      <h1>💡 Health Tips</h1>
+      <p class="text-muted mb-2">Evidence-based tips to support your wellbeing throughout your cycle.</p>
+      <div id="tips-grid" class="card-grid"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer" role="contentinfo">
+    <p class="privacy-notice">Your data is stored locally on your device and is not shared.</p>
+  </footer>
+
+  <!-- Edit Data Modal -->
+  <div id="edit-modal" class="modal-overlay" hidden aria-modal="true" role="dialog" aria-labelledby="edit-modal-title">
+    <div class="modal-content card">
+      <h2 id="edit-modal-title">✏️ Edit Cycle Data</h2>
+      <form id="edit-form" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="edit-start-date">Last Period Start Date</label>
+          <input type="date" id="edit-start-date" class="form-input" aria-describedby="edit-start-date-error" required />
+          <span id="edit-start-date-error" class="form-error"></span>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="edit-cycle-length">Average Cycle Length (days)</label>
+          <input type="number" id="edit-cycle-length" class="form-input" min="21" max="45" aria-describedby="edit-cycle-length-error" required />
+          <span id="edit-cycle-length-error" class="form-error"></span>
+        </div>
+        <div class="form-group">
+          <span class="form-label">Symptoms</span>
+          <div class="checkbox-group" id="edit-symptom-group">
+            <label class="checkbox-chip"><input type="checkbox" name="edit-symptom" value="cramps"> Cramps</label>
+            <label class="checkbox-chip"><input type="checkbox" name="edit-symptom" value="headache"> Headache</label>
+            <label class="checkbox-chip"><input type="checkbox" name="edit-symptom" value="mood-swings"> Mood Swings</label>
+            <label class="checkbox-chip"><input type="checkbox" name="edit-symptom" value="bloating"> Bloating</label>
+            <label class="checkbox-chip"><input type="checkbox" name="edit-symptom" value="fatigue"> Fatigue</label>
+            <label class="checkbox-chip"><input type="checkbox" name="edit-symptom" value="backache"> Backache</label>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" id="edit-form-save" class="btn btn-primary">Save Changes</button>
+          <button type="button" id="edit-form-cancel" class="btn btn-secondary">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
